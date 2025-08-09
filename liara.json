@@ -1,8 +1,0 @@
-{
-    "app": "spotify-music",
-    "port": 3000,
-    "build": {
-        "location": "iran"
-    },
-    "disks": []
-}

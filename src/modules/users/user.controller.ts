@@ -14,7 +14,7 @@ export class UserController {
     @Get("/profile/:username")
     @OptionalAuth()
     @ApiOperation({
-        summary: "Get user profile by username",
+        summary: "Get user profile by username (optional auth)",
         description:
             "Returns a user's profile by username. If profile is public, it shows normally. If private, user must be followed.",
     })
