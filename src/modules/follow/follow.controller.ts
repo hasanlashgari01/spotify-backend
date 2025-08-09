@@ -1,28 +1,30 @@
 import { Controller, Get, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { Auth } from "src/common/decorators/auth.decorator";
+import { Auth, OptionalAuth } from "src/common/decorators/auth.decorator";
 import { FollowService } from "./follow.service";
 import { Pagination } from "src/common/decorators/pagination.decorator";
 import { PaginationDto } from "src/common/dto/pagination.dto";
 import { ApiOperation } from "@nestjs/swagger";
 
 @Controller("follow")
-@Auth()
 export class FollowController {
     constructor(private readonly followService: FollowService) {}
 
     @Get("/:userId/followers/count")
-    @ApiOperation({ summary: "Get the number of followers for a user" })
+    @OptionalAuth()
+    @ApiOperation({ summary: "Get the number of followers for a user (optional auth)" })
     getFollowersCount(@Param("userId", ParseIntPipe) userId: string) {
         return this.followService.getFollowersCount(+userId);
     }
 
     @Get("/:userId/followings/count")
-    @ApiOperation({ summary: "Get the number of followings for a user" })
+    @OptionalAuth()
+    @ApiOperation({ summary: "Get the number of followings for a user (optional auth)" })
     getFollowingsCount(@Param("userId", ParseIntPipe) userId: string) {
         return this.followService.getFollowingsCount(+userId);
     }
 
     @Get("/:userId/followers")
+    @Auth()
     @ApiOperation({ summary: "Get paginated list of followers for a user" })
     @Pagination()
     getFollowers(
@@ -33,6 +35,7 @@ export class FollowController {
     }
 
     @Get("/:userId/followings")
+    @Auth()
     @ApiOperation({ summary: "Get paginated list of users followed by the user" })
     @Pagination()
     getFollowings(
@@ -43,6 +46,7 @@ export class FollowController {
     }
 
     @Get("/:userId")
+    @Auth()
     @ApiOperation({ summary: "Follow or unfollow a user by ID" })
     toggleFollow(@Param("userId", ParseIntPipe) userId: string) {
         return this.followService.toggleFollow(+userId);
