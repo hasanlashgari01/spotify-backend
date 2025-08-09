@@ -6,6 +6,7 @@ import {
     Param,
     Patch,
     Post,
+    Put,
     Query,
     UploadedFile,
     UseInterceptors,
@@ -38,7 +39,8 @@ export class PlaylistsController {
     }
 
     @Get()
-    @ApiOperation({ summary: "Get all playlists" })
+    @OptionalAuth()
+    @ApiOperation({ summary: "Get all playlists (optional auth)" })
     @Pagination()
     findAll(@Query() paginationDto: PaginationDto) {
         return this.playlistsService.findAllPublic(paginationDto);
@@ -85,9 +87,16 @@ export class PlaylistsController {
 
     @Get(":slug")
     @OptionalAuth()
-    @ApiOperation({ summary: "Get playlist details by slug" })
+    @ApiOperation({ summary: "Get playlist details by slug (optional auth)" })
     findOne(@Param("slug") slug: string) {
         return this.playlistsService.findOne(slug);
+    }
+
+    @Put(":id")
+    @Auth()
+    @ApiOperation({ summary: "Toggle active/inactive status of a playlist" })
+    toggleStatus(@Param("id") id: string) {
+        return this.playlistsService.toggleStatus(+id);
     }
 
     @Patch(":id")

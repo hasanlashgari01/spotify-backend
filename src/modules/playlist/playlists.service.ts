@@ -57,8 +57,11 @@ export class PlaylistsService {
     }
 
     async findAllPublic(paginationDto: PaginationDto) {
+        const user = this.request?.user as AuthJwtPayload;
         const { limit, page, skip } = paginationSolver(paginationDto);
-        const where: FindOptionsWhere<PlaylistEntity> = { status: Status.PUBLIC };
+        const where: FindOptionsWhere<PlaylistEntity> = {};
+
+        if (!user?.sub) where.status = Status.PUBLIC;
 
         const [playlists, count] = await this.playlistRepository.findAndCount({
             where,
