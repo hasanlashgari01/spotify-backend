@@ -106,6 +106,14 @@ export class SongsService {
                 artistId: In(followingIdList),
                 status: SongStatus.PUBLISHED,
             },
+            relations: ["artist"],
+            select: {
+                artist: {
+                    id: true,
+                    fullName: true,
+                    username: true,
+                },
+            },
             take: 10,
             order: { createdAt: "DESC" },
         });
@@ -118,6 +126,14 @@ export class SongsService {
             where: {
                 status: SongStatus.PUBLISHED,
             },
+            relations: ["artist"],
+            select: {
+                artist: {
+                    id: true,
+                    fullName: true,
+                    username: true,
+                },
+            },
             take: 10,
             order: { createdAt: "DESC" },
         });
@@ -128,6 +144,14 @@ export class SongsService {
     async popularSongs() {
         const songs = await this.songRepository.find({
             where: { status: SongStatus.PUBLISHED },
+            relations: ["artist"],
+            select: {
+                artist: {
+                    id: true,
+                    fullName: true,
+                    username: true,
+                },
+            },
             take: 10,
             order: { plays: "DESC" },
         });
