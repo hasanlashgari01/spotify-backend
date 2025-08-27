@@ -9,6 +9,11 @@ async function bootstrap() {
 
     const PORT = process.env.PORT || 3000;
 
+    app.enableCors({
+        origin: '*',
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+        credentials: true,
+    });
     SwaggerConfigInit(app);
     app.useGlobalPipes(
         new ValidationPipe({
