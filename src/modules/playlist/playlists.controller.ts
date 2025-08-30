@@ -23,6 +23,7 @@ import { UpdatePlaylistDto } from "./dto/update-playlist.dto";
 import { PlaylistsService } from "./playlists.service";
 import { Search } from "./decorators/search.decorator";
 import { SearchDto } from "./dto/search.dto";
+import { SortSongs } from "./decorators/sort.decorator";
 
 @Controller("playlists")
 export class PlaylistsController {
@@ -99,8 +100,13 @@ export class PlaylistsController {
     @Get(":slug")
     @OptionalAuth()
     @ApiOperation({ summary: "Get playlist details by slug (optional auth)" })
-    findOne(@Param("slug") slug: string) {
-        return this.playlistsService.findOne(slug);
+    @SortSongs()
+    findOne(
+        @Param("slug") slug: string,
+        @Query("sortBy") sortBy: "title" | "artist" | "createdAt" | "duration" = "createdAt",
+        @Query("order") order: "ASC" | "DESC" = "ASC",
+    ) {
+        return this.playlistsService.findOne(slug, sortBy, order);
     }
 
     @Put(":id")

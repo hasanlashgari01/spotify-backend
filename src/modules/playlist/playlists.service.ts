@@ -76,9 +76,56 @@ export class PlaylistsService {
         };
     }
 
-    async findOne(slug: string) {
+    // async findOne(slug: string) {
+    //     const isLiked = false;
+    //
+    //     const playlist = await this.playlistRepository.findOne({
+    //         where: {
+    //             slug,
+    //             status: Status.PUBLIC,
+    //         },
+    //     });
+    //     if (!playlist) throw new NotFoundException(NotFoundMessage.Playlist);
+    //     const [songsOfPlaylist, count] = await this.playlistSongRepository.findAndCount({
+    //         where: {
+    //             playlistId: playlist.id,
+    //             playlist: { status: Status.PUBLIC },
+    //         },
+    //         relations: ["song", "song.artist"],
+    //         select: {
+    //             song: {
+    //                 title: true,
+    //                 audioUrl: true,
+    //                 cover: true,
+    //                 duration: true,
+    //                 artist: {
+    //                     id: true,
+    //                     username: true,
+    //                     fullName: true,
+    //                 },
+    //             },
+    //         },
+    //         order: { createdAt: "DESC" },
+    //     });
+    //
+    //     const data = {
+    //         ...playlist,
+    //         isLiked,
+    //         songs: songsOfPlaylist,
+    //         count,
+    //     };
+    //
+    //     return data;
+    // }
+
+    async findOne(
+        slug: string,
+        sortBy: "title" | "artist" | "createdAt" | "duration" = "duration",
+        order: "ASC" | "DESC" = "DESC"
+    ) {
         const isLiked = false;
 
+        // پیدا کردن پلی‌لیست
         const playlist = await this.playlistRepository.findOne({
             where: {
                 slug,
@@ -86,37 +133,42 @@ export class PlaylistsService {
             },
         });
         if (!playlist) throw new NotFoundException(NotFoundMessage.Playlist);
-        const [songsOfPlaylist, count] = await this.playlistSongRepository.findAndCount({
-            where: {
-                playlistId: playlist.id,
-                playlist: { status: Status.PUBLIC },
-            },
-            relations: ["song", "song.artist"],
-            select: {
-                song: {
-                    title: true,
-                    audioUrl: true,
-                    cover: true,
-                    duration: true,
-                    artist: {
-                        id: true,
-                        username: true,
-                        fullName: true,
-                    },
-                },
-            },
-            order: { createdAt: "DESC" },
-        });
 
-        const data = {
+        // تعیین فیلد مرتب‌سازی داینامیک
+        let orderField: string;
+        switch (sortBy) {
+            case "title":
+                orderField = "song.title";
+                break;
+            case "artist":
+                orderField = "artist.fullName";
+                break;
+            case "duration":
+                orderField = "song.duration";
+                break;
+            default: // createdAt
+                orderField = "song.createdAt";
+        }
+
+        // گرفتن آهنگ‌ها و شمارش
+        const query = this.playlistSongRepository
+            .createQueryBuilder("playlistSong")
+            .innerJoinAndSelect("playlistSong.song", "song")
+            .innerJoin("song.artist", "artist")
+            .addSelect(["artist.id", "artist.username", "artist.fullName"])
+            .where("playlistSong.playlistId = :playlistId", { playlistId: playlist.id })
+            .orderBy(orderField, order);
+
+        const [songsOfPlaylist, count] = await query.getManyAndCount();
+
+        return {
             ...playlist,
             isLiked,
             songs: songsOfPlaylist,
             count,
         };
-
-        return data;
     }
+
 
     async myPlaylist(paginationDto: PaginationDto) {
         const { limit, page, skip } = paginationSolver(paginationDto);
