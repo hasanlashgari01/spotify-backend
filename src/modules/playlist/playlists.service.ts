@@ -286,4 +286,28 @@ export class PlaylistsService {
 
         return playlist;
     }
+
+    async search(playlistId: number, q: string) {
+        return await this.playlistSongRepository
+            .createQueryBuilder("playlistSong")
+            .innerJoinAndSelect("playlistSong.song", "song")
+            .innerJoin("song.artist", "artist") // فقط جوین کن
+            .addSelect(["artist.id", "artist.fullName", "artist.avatar"]) // فقط ستون‌های لازم
+            .where("playlistSong.playlistId = :playlistId", { playlistId })
+            .andWhere(
+                "(song.title LIKE :q OR artist.fullName LIKE :q)",
+                { q: `%${q}%` }
+            )
+            .addSelect(`
+      CASE
+        WHEN song.title LIKE :qExact THEN 2
+        WHEN artist.fullName LIKE :qExact THEN 1
+        ELSE 0
+      END
+    `, "relevance")
+            .orderBy("relevance", "DESC")
+            .addOrderBy("song.title", "ASC")
+            .setParameters({ q: `%${q}%`, qExact: `%${q}%` })
+            .getMany();
+    }
 }

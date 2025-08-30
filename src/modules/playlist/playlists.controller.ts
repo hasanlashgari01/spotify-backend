@@ -21,6 +21,8 @@ import { OptionalImageValidation } from "src/common/utils/upload.utils";
 import { CreatePlaylistDto } from "./dto/create-playlist.dto";
 import { UpdatePlaylistDto } from "./dto/update-playlist.dto";
 import { PlaylistsService } from "./playlists.service";
+import { Search } from "./decorators/search.decorator";
+import { SearchDto } from "./dto/search.dto";
 
 @Controller("playlists")
 export class PlaylistsController {
@@ -83,6 +85,15 @@ export class PlaylistsController {
     @ApiOperation({ summary: "Get liked playlists" })
     myPlaylistLiked() {
         return this.playlistsService.myPlaylistLiked();
+    }
+
+    @Get("/search")
+    @ApiOperation({ summary: "Get search for playlists" })
+    @Search()
+    search(@Query() query: SearchDto) {
+        const { playlistId, q } = query;
+
+        return this.playlistsService.search(+playlistId, q);
     }
 
     @Get(":slug")
