@@ -76,65 +76,30 @@ export class PlaylistsService {
         };
     }
 
-    // async findOne(slug: string) {
-    //     const isLiked = false;
-    //
-    //     const playlist = await this.playlistRepository.findOne({
-    //         where: {
-    //             slug,
-    //             status: Status.PUBLIC,
-    //         },
-    //     });
-    //     if (!playlist) throw new NotFoundException(NotFoundMessage.Playlist);
-    //     const [songsOfPlaylist, count] = await this.playlistSongRepository.findAndCount({
-    //         where: {
-    //             playlistId: playlist.id,
-    //             playlist: { status: Status.PUBLIC },
-    //         },
-    //         relations: ["song", "song.artist"],
-    //         select: {
-    //             song: {
-    //                 title: true,
-    //                 audioUrl: true,
-    //                 cover: true,
-    //                 duration: true,
-    //                 artist: {
-    //                     id: true,
-    //                     username: true,
-    //                     fullName: true,
-    //                 },
-    //             },
-    //         },
-    //         order: { createdAt: "DESC" },
-    //     });
-    //
-    //     const data = {
-    //         ...playlist,
-    //         isLiked,
-    //         songs: songsOfPlaylist,
-    //         count,
-    //     };
-    //
-    //     return data;
-    // }
-
     async findOne(
         slug: string,
         sortBy: "title" | "artist" | "createdAt" | "duration" = "duration",
-        order: "ASC" | "DESC" = "DESC"
+        order: "ASC" | "DESC" = "DESC",
     ) {
         const isLiked = false;
 
-        // پیدا کردن پلی‌لیست
         const playlist = await this.playlistRepository.findOne({
             where: {
                 slug,
                 status: Status.PUBLIC,
             },
+            relations: ["owner"],
+            select: {
+                owner: {
+                    id: true,
+                    username: true,
+                    fullName: true,
+                    avatar: true,
+                },
+            },
         });
         if (!playlist) throw new NotFoundException(NotFoundMessage.Playlist);
 
-        // تعیین فیلد مرتب‌سازی داینامیک
         let orderField: string;
         switch (sortBy) {
             case "title":
@@ -146,11 +111,10 @@ export class PlaylistsService {
             case "duration":
                 orderField = "song.duration";
                 break;
-            default: // createdAt
+            default:
                 orderField = "song.createdAt";
         }
 
-        // گرفتن آهنگ‌ها و شمارش
         const query = this.playlistSongRepository
             .createQueryBuilder("playlistSong")
             .innerJoinAndSelect("playlistSong.song", "song")
@@ -168,7 +132,6 @@ export class PlaylistsService {
             count,
         };
     }
-
 
     async myPlaylist(paginationDto: PaginationDto) {
         const { limit, page, skip } = paginationSolver(paginationDto);
@@ -343,20 +306,20 @@ export class PlaylistsService {
         return await this.playlistSongRepository
             .createQueryBuilder("playlistSong")
             .innerJoinAndSelect("playlistSong.song", "song")
-            .innerJoin("song.artist", "artist") // فقط جوین کن
-            .addSelect(["artist.id", "artist.fullName", "artist.avatar"]) // فقط ستون‌های لازم
+            .innerJoin("song.artist", "artist")
+            .addSelect(["artist.id", "artist.fullName", "artist.avatar"])
             .where("playlistSong.playlistId = :playlistId", { playlistId })
-            .andWhere(
-                "(song.title LIKE :q OR artist.fullName LIKE :q)",
-                { q: `%${q}%` }
-            )
-            .addSelect(`
+            .andWhere("(song.title LIKE :q OR artist.fullName LIKE :q)", { q: `%${q}%` })
+            .addSelect(
+                `
       CASE
         WHEN song.title LIKE :qExact THEN 2
         WHEN artist.fullName LIKE :qExact THEN 1
         ELSE 0
       END
-    `, "relevance")
+    `,
+                "relevance",
+            )
             .orderBy("relevance", "DESC")
             .addOrderBy("song.title", "ASC")
             .setParameters({ q: `%${q}%`, qExact: `%${q}%` })
