@@ -221,7 +221,7 @@ export class PlaylistsService {
             id: playlistId,
             ownerId: sub,
         });
-        if (playlist) throw new NotFoundException(NotFoundMessage.Playlist);
+        if (!playlist) throw new NotFoundException(NotFoundMessage.Playlist);
         const song = await this.playlistSongRepository.findOneBy({
             songId,
             playlistId,
