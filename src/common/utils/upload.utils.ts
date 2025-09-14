@@ -1,7 +1,7 @@
 import { FileTypeValidator, MaxFileSizeValidator, ParseFilePipe } from "@nestjs/common";
 
-const audio_size = process.env.AUDIO_SIZE || 10;
-const image_size = process.env.IMAGE_SIZE || 1;
+const audio_size: number = process.env.AUDIO_SIZE || 10;
+const image_size: number = process.env.IMAGE_SIZE || 1;
 
 export const ImageValidation = new ParseFilePipe({
     validators: [

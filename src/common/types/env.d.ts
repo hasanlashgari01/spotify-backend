@@ -16,5 +16,8 @@ namespace NodeJS {
         S3_ACCESS_KEY: string;
         S3_BUCKET_NAME: string;
         S3_ENDPOINT: string;
+        // Size
+        IMAGE_SIZE: number;
+        AUDIO_SIZE:number;
     }
 }
