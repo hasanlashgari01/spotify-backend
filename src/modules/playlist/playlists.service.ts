@@ -1,4 +1,10 @@
-import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import {
+    ConflictException,
+    ForbiddenException,
+    Inject,
+    Injectable,
+    NotFoundException,
+} from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Request } from "express";
@@ -81,13 +87,21 @@ export class PlaylistsService {
         sortBy: "title" | "artist" | "createdAt" | "duration" = "duration",
         order: "ASC" | "DESC" = "DESC",
     ) {
+        const user = this.request?.user as AuthJwtPayload;
         const isLiked = false;
+        const where: FindOptionsWhere<PlaylistEntity> = {
+            slug,
+        };
+
+        if (user?.sub) {
+            const existPlaylist = await this.playlistRepository.findOne({ where: { slug } });
+            if (existPlaylist?.ownerId != user.sub) where.status = Status.PUBLIC;
+        } else {
+            where.status = Status.PUBLIC;
+        }
 
         const playlist = await this.playlistRepository.findOne({
-            where: {
-                slug,
-                status: Status.PUBLIC,
-            },
+            where,
             relations: ["owner"],
             select: {
                 owner: {
@@ -98,6 +112,7 @@ export class PlaylistsService {
                 },
             },
         });
+
         if (!playlist) throw new NotFoundException(NotFoundMessage.Playlist);
 
         let orderField: string;
@@ -183,7 +198,12 @@ export class PlaylistsService {
     }
 
     async toggleStatus(id: number) {
+        const user = this.request?.user as AuthJwtPayload;
         const playlist = await this.findOneById(id);
+
+        if (playlist.ownerId != user.sub) {
+            throw new ForbiddenException("شما اجازه ویرایش این پلی‌لیست را ندارید");
+        }
 
         const status = playlist.status === Status.PUBLIC ? Status.PRIVATE : Status.PUBLIC;
 
@@ -192,7 +212,7 @@ export class PlaylistsService {
         });
 
         return {
-            message: "پلی لیست آپدیت شد",
+            message: "پلی لیست ویرایش شد",
         };
     }
 
