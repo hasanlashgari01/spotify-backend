@@ -32,7 +32,7 @@ export enum PublicMessage {
     Liked = "آهنگ با موفقیت لایک شد",
     DisLike = "لایک شما از آهنگ برداشته شد",
     PlaylistLiked = "پلی لیست با موفقیت لایک شد",
-    PlaylistDisLike = "پلی لیست شما از آهنگ برداشته شد",
+    PlaylistDisLike = "پلی لیست آنلایک شد",
 }
 
 export enum AdminMessage {

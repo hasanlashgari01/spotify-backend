@@ -88,7 +88,6 @@ export class PlaylistsService {
         order: "ASC" | "DESC" = "DESC",
     ) {
         const user = this.request?.user as AuthJwtPayload;
-        const isLiked = false;
         const where: FindOptionsWhere<PlaylistEntity> = {
             slug,
         };
@@ -139,10 +138,14 @@ export class PlaylistsService {
             .orderBy(orderField, order);
 
         const [songsOfPlaylist, count] = await query.getManyAndCount();
+        const isLiked = await this.playlistLikeRepository.findOneBy({
+            playlistId: playlist.id,
+            userId: user.sub,
+        });
 
         return {
             ...playlist,
-            isLiked,
+            isLiked: isLiked ? true : false,
             songs: songsOfPlaylist,
             count,
         };
