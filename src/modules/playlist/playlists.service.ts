@@ -84,7 +84,7 @@ export class PlaylistsService {
 
     async findOne(
         slug: string,
-        sortBy: "title" | "artist" | "createdAt" | "duration" = "duration",
+        sortBy: "title" | "artist" | "createdAt" | "duration" = "createdAt",
         order: "ASC" | "DESC" = "DESC",
     ) {
         const user = this.request?.user as AuthJwtPayload;

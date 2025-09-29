@@ -258,6 +258,47 @@ export class SongsService {
         }
     }
 
+    async getSongsByGenreSlug(
+        id: number,
+        paginationDto: PaginationDto,
+        sortBy: "title" | "artist" | "createdAt" | "duration" = "createdAt",
+        order: "ASC" | "DESC" = "DESC",
+    ) {
+        const { limit, page, skip } = paginationSolver(paginationDto);
+
+        let orderField: string;
+        switch (sortBy) {
+            case "title":
+                orderField = "song.title";
+                break;
+            case "artist":
+                orderField = "artist.fullName";
+                break;
+            case "duration":
+                orderField = "song.duration";
+                break;
+            default:
+                orderField = "song.createdAt";
+        }
+
+        const qb = this.songGenreRepository
+            .createQueryBuilder("sg")
+            .innerJoinAndSelect("sg.song", "song")
+            .innerJoin("song.artist", "artist")
+            .addSelect(["artist.id", "artist.username", "artist.fullName"])
+            .where("sg.genreId = :id", { id })
+            .orderBy(orderField, order)
+            .skip(skip)
+            .take(limit);
+
+        const [songs, count] = await qb.getManyAndCount();
+
+        return {
+            songs: songs.map((sg) => sg.song),
+            pagination: paginationGenerator(count, page, limit),
+        };
+    }
+
     private async getAudioCoverAndDuration(audio: Express.Multer.File) {
         const metadata = await parseBuffer(audio.buffer, audio.mimetype);
         const duration = metadata.format.duration; // in seconds

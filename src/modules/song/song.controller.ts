@@ -12,16 +12,18 @@ import {
 } from "@nestjs/common";
 import { ApiConsumes, ApiOperation } from "@nestjs/swagger";
 import { ArtistOnly, Auth } from "src/common/decorators/auth.decorator";
+import { Pagination } from "src/common/decorators/pagination.decorator";
+import { PaginationDto } from "src/common/dto/pagination.dto";
 import { FormType } from "src/common/enum/form-type.enum";
 import { SongStatus } from "src/common/enum/song.enum";
 import { UploadFileS3 } from "src/common/interceptors/upload-file.interceptor";
 import { AudioValidation } from "src/common/utils/upload.utils";
 import { SongFilterStatus } from "./decorators/query.decorator";
+import { SongsSlugQuery } from "./decorators/sort.decorator";
 import { CreateSongDto } from "./dto/create-song.dto";
 import { UpdateSongDto } from "./dto/update-song.dto";
 import { SongsService } from "./song.service";
-import { Pagination } from "src/common/decorators/pagination.decorator";
-import { PaginationDto } from "src/common/dto/pagination.dto";
+import { SongsQueryDto } from "./dto/song-query.dto";
 
 @Controller("song")
 export class SongsController {
@@ -84,6 +86,13 @@ export class SongsController {
     @ApiOperation({ summary: "Increment song play count" })
     incrementPlaySong(@Param("id") id: string) {
         return this.songsService.incrementPlaySong(+id);
+    }
+
+    @Get("/genre/:id")
+    @ApiOperation({ summary: "Get songs by genre" })
+    @SongsSlugQuery()
+    getSongsByGenreSlug(@Param("id") id: string, @Query() query: SongsQueryDto) {
+        return this.songsService.getSongsByGenreSlug(+id, query, query.sortBy, query.order);
     }
 
     @Get(":id")

@@ -4,6 +4,8 @@ import { NotFoundMessage } from "src/common/enum/message.enum";
 import { generateRandomSlug } from "src/common/utils/random.utils";
 import { Repository } from "typeorm";
 import { GenreEntity } from "./entities/genre.entity";
+import { paginationSolver } from "src/common/utils/pagination.util";
+import { PaginationDto } from "src/common/dto/pagination.dto";
 
 @Injectable()
 export class GenresService {
@@ -14,10 +16,13 @@ export class GenresService {
     }
 
     async findOneBySlug(slug: string) {
-        const genre = await this.genreRepository.findOneBy({ slug });
-        if (!genre) throw new NotFoundException(NotFoundMessage.Genre);
+        const result = await this.genreRepository.findOne({
+            where: { slug },
+        });
 
-        return genre;
+        if (!result) throw new NotFoundException(NotFoundMessage.Genre);
+
+        return result;
     }
 
     async findOneById(id: number) {
