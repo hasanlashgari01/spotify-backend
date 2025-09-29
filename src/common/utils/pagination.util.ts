@@ -2,22 +2,25 @@ import { PaginationDto } from "../dto/pagination.dto";
 
 export function paginationSolver(paginationDto: PaginationDto) {
     let { page = 0, limit = 10 } = paginationDto;
-    if (!page || page <= 1) page = 0;
-    else page = page - 1;
 
-    if (!limit || limit <= 0) limit = 10;
-    const skip = page * limit;
+    page = Number(page);
+    limit = Number(limit);
+
+    if (isNaN(page) || page < 1) page = 1;
+    if (isNaN(limit) || limit < 1) limit = 10;
+    const skip = (page - 1) * limit;
+
     return {
-        page: page === 0 ? 1 : page,
+        page,
         limit,
         skip,
     };
 }
 
-export function paginationGenerator(count: number = 0, page: number = 0, limit: number = 0) {
+export function paginationGenerator(count: number = 0, page: number = 1, limit: number = 10) {
     return {
-        page: +page,
-        limit: +limit,
+        page,
+        limit,
         pageCount: Math.ceil(count / limit),
         totalCount: count,
     };
