@@ -3,7 +3,7 @@ import { ApiConsumes, ApiOperation } from "@nestjs/swagger";
 import { Auth, OptionalAuth, UserOnly } from "src/common/decorators/auth.decorator";
 import { FormType } from "src/common/enum/form-type.enum";
 import { UploadFileS3 } from "src/common/interceptors/upload-file.interceptor";
-import { ImageValidation } from "src/common/utils/upload.utils";
+import { ImageValidation, OptionalImageValidation } from "src/common/utils/upload.utils";
 import { UpdateProfileDto } from "./dto/profile.dto";
 import { UserService } from "./user.service";
 
@@ -29,7 +29,7 @@ export class UserController {
     @UseInterceptors(UploadFileS3("avatar"))
     updateProfile(
         @Body() profileDto: UpdateProfileDto,
-        @UploadedFile(ImageValidation) avatar: Express.Multer.File,
+        @UploadedFile(OptionalImageValidation) avatar: Express.Multer.File,
     ) {
         return this.userService.updateProfile(profileDto, avatar);
     }
