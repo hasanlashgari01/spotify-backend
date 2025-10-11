@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     ConflictException,
     ForbiddenException,
     Inject,
@@ -9,7 +10,7 @@ import { REQUEST } from "@nestjs/core";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Request } from "express";
 import { PaginationDto } from "src/common/dto/pagination.dto";
-import { NotFoundMessage, PublicMessage } from "src/common/enum/message.enum";
+import { BadRequestMessage, NotFoundMessage, PublicMessage } from "src/common/enum/message.enum";
 import { paginationGenerator, paginationSolver } from "src/common/utils/pagination.util";
 import { generateRandomSlug } from "src/common/utils/random.utils";
 import { FindOptionsWhere, Repository } from "typeorm";
@@ -84,9 +85,11 @@ export class PlaylistsService {
 
     async findOne(
         slug: string,
+        paginationDto: PaginationDto,
         sortBy: "title" | "artist" | "createdAt" | "duration" = "createdAt",
         order: "ASC" | "DESC" = "DESC",
     ) {
+        const { limit, page, skip } = paginationSolver(paginationDto);
         const user = this.request?.user as AuthJwtPayload;
         const where: FindOptionsWhere<PlaylistEntity> = {
             slug,
@@ -135,19 +138,26 @@ export class PlaylistsService {
             .innerJoin("song.artist", "artist")
             .addSelect(["artist.id", "artist.username", "artist.fullName"])
             .where("playlistSong.playlistId = :playlistId", { playlistId: playlist.id })
-            .orderBy(orderField, order);
+            .orderBy(orderField, order)
+            .skip(skip)
+            .take(limit);
 
         const [songsOfPlaylist, count] = await query.getManyAndCount();
-        const isLiked = await this.playlistLikeRepository.findOneBy({
-            playlistId: playlist.id,
-            userId: user.sub,
-        });
+
+        let isLiked = null;
+        if (user) {
+            isLiked = await this.playlistLikeRepository.findOneBy({
+                playlistId: playlist.id,
+                userId: user.sub,
+            });
+        }
 
         return {
             ...playlist,
             isLiked: isLiked ? true : false,
             songs: songsOfPlaylist,
             count,
+            pagination: paginationGenerator(count, page, limit),
         };
     }
 
@@ -319,6 +329,7 @@ export class PlaylistsService {
     }
 
     async findOneById(id: number) {
+        if (isNaN(id)) throw new BadRequestException(BadRequestMessage.Id);
         const playlist = await this.playlistRepository.findOneBy({ id });
         if (!playlist) throw new NotFoundException(NotFoundMessage.Playlist);
 
@@ -335,12 +346,12 @@ export class PlaylistsService {
             .andWhere("(song.title LIKE :q OR artist.fullName LIKE :q)", { q: `%${q}%` })
             .addSelect(
                 `
-      CASE
-        WHEN song.title LIKE :qExact THEN 2
-        WHEN artist.fullName LIKE :qExact THEN 1
-        ELSE 0
-      END
-    `,
+                    CASE
+                        WHEN song.title LIKE :qExact THEN 2
+                        WHEN artist.fullName LIKE :qExact THEN 1
+                        ELSE 0
+                    END
+                `,
                 "relevance",
             )
             .orderBy("relevance", "DESC")

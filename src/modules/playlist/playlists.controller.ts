@@ -14,16 +14,17 @@ import {
 import { ApiConsumes, ApiOperation } from "@nestjs/swagger";
 import { Auth, OptionalAuth } from "src/common/decorators/auth.decorator";
 import { Pagination } from "src/common/decorators/pagination.decorator";
+import { SortAndPaginationQuery } from "src/common/decorators/sort.decorator";
 import { PaginationDto } from "src/common/dto/pagination.dto";
 import { FormType } from "src/common/enum/form-type.enum";
 import { UploadFileS3 } from "src/common/interceptors/upload-file.interceptor";
 import { OptionalImageValidation } from "src/common/utils/upload.utils";
+import { Search } from "./decorators/search.decorator";
 import { CreatePlaylistDto } from "./dto/create-playlist.dto";
+import { SearchDto } from "./dto/search.dto";
 import { UpdatePlaylistDto } from "./dto/update-playlist.dto";
 import { PlaylistsService } from "./playlists.service";
-import { Search } from "./decorators/search.decorator";
-import { SearchDto } from "./dto/search.dto";
-import { SortSongs } from "./decorators/sort.decorator";
+import { SongsQueryDto } from "../song/dto/song-query.dto";
 
 @Controller("playlists")
 export class PlaylistsController {
@@ -100,13 +101,9 @@ export class PlaylistsController {
     @Get(":slug")
     @OptionalAuth()
     @ApiOperation({ summary: "Get playlist details by slug (optional auth)" })
-    @SortSongs()
-    findOne(
-        @Param("slug") slug: string,
-        @Query("sortBy") sortBy: "title" | "artist" | "createdAt" | "duration" = "createdAt",
-        @Query("order") order: "ASC" | "DESC" = "ASC",
-    ) {
-        return this.playlistsService.findOne(slug, sortBy, order);
+    @SortAndPaginationQuery()
+    findOne(@Param("slug") slug: string, @Query() query: SongsQueryDto) {
+        return this.playlistsService.findOne(slug, query, query.sortBy, query.order);
     }
 
     @Put(":id")

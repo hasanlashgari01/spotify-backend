@@ -49,22 +49,19 @@ export class LikeService {
         const { sub: userId } = this.request.user as AuthJwtPayload;
         const { limit, page, skip } = paginationSolver(paginationDto);
 
-        const [likes, count] = await this.likeRepository.findAndCount({
-            where: {
-                userId,
-                song: {
-                    status: SongStatus.PUBLISHED,
-                },
-            },
-            relations: ["song"],
-            skip,
-            take: limit,
-            order: { createdAt: "DESC" },
-        });
+        const [likes, count] = await this.likeRepository
+            .createQueryBuilder("like")
+            .innerJoinAndSelect("like.song", "song")
+            .innerJoin("song.artist", "artist")
+            .addSelect(["artist.id", "artist.username", "artist.fullName"])
+            .where("like.userId = :userId", { userId })
+            .skip(skip)
+            .take(limit)
+            .getManyAndCount();
 
         return {
-            pagination: paginationGenerator(count, page, limit),
             likes,
+            pagination: paginationGenerator(count, page, limit),
         };
     }
 

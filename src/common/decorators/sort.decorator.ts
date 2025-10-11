@@ -19,6 +19,6 @@ export function SortSongs() {
     );
 }
 
-export function SongsSlugQuery() {
+export function SortAndPaginationQuery() {
     return applyDecorators(Pagination(), SortSongs());
 }

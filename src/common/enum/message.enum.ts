@@ -25,6 +25,10 @@ export enum NotFoundMessage {
     SongPlaylist = "آهنگ در پلی لیست وجود ندارد",
 }
 
+export enum BadRequestMessage {
+    Id = "شناسه‌ی ارسال‌شده معتبر نیست",
+}
+
 export enum PublicMessage {
     Followed = "با موفقیت دنبال شد",
     UnFollow = "از لیست دنبال شوندگان حذف شد",
