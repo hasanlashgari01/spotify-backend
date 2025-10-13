@@ -68,6 +68,7 @@ export class FollowService {
                 follower: {
                     id: true,
                     fullName: true,
+                    username: true,
                     avatar: true,
                     role: true,
                 },
@@ -95,6 +96,7 @@ export class FollowService {
                 following: {
                     id: true,
                     fullName: true,
+                    username: true,
                     avatar: true,
                     role: true,
                 },
