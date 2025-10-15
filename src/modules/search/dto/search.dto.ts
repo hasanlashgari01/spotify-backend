@@ -1,8 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IsIn, IsOptional } from "class-validator";
-import { PaginationDto } from "src/common/dto/pagination.dto";
 
-export class SearchDto extends PaginationDto {
+export class SearchDto {
     @ApiProperty()
     @IsOptional()
     q: string;
@@ -11,4 +10,8 @@ export class SearchDto extends PaginationDto {
     @IsOptional()
     @IsIn(["artist", "song", "playlist", "user"])
     filter?: "artist" | "song" | "playlist" | "user";
+
+    @ApiPropertyOptional({ type: "integer" })
+    @IsOptional()
+    page: number;
 }

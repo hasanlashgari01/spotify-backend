@@ -1,6 +1,5 @@
 import { applyDecorators } from "@nestjs/common";
 import { ApiQuery } from "@nestjs/swagger";
-import { Pagination } from "src/common/decorators/pagination.decorator";
 
 export function SortSongs() {
     return applyDecorators(
@@ -17,5 +16,13 @@ export function SortSongs() {
 }
 
 export function SearchQuery() {
-    return applyDecorators(SortSongs(), Pagination());
+    return applyDecorators(
+        SortSongs(),
+        ApiQuery({
+            name: "page",
+            example: 1,
+            required: false,
+            type: "integer",
+        }),
+    );
 }
