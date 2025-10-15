@@ -1,6 +1,5 @@
 import {
     BadRequestException,
-    ConflictException,
     ForbiddenException,
     Inject,
     Injectable,
@@ -19,10 +18,10 @@ import { S3Service } from "../s3/s3.service";
 import { SongEntity } from "../song/entities/song.entity";
 import { CreatePlaylistDto } from "./dto/create-playlist.dto";
 import { UpdatePlaylistDto } from "./dto/update-playlist.dto";
+import { PlaylistLikeEntity } from "./entities/like.entity";
 import { PlaylistSongEntity } from "./entities/playlist-song.entity";
 import { PlaylistEntity } from "./entities/playlist.entity";
 import { Status } from "./enum/status.enum";
-import { PlaylistLikeEntity } from "./entities/like.entity";
 
 @Injectable()
 export class PlaylistsService {

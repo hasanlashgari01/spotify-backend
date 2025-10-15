@@ -3,7 +3,7 @@ import { ApiConsumes, ApiOperation } from "@nestjs/swagger";
 import { Auth, OptionalAuth, UserOnly } from "src/common/decorators/auth.decorator";
 import { FormType } from "src/common/enum/form-type.enum";
 import { UploadFileS3 } from "src/common/interceptors/upload-file.interceptor";
-import { ImageValidation, OptionalImageValidation } from "src/common/utils/upload.utils";
+import { OptionalImageValidation } from "src/common/utils/upload.utils";
 import { UpdateProfileDto } from "./dto/profile.dto";
 import { UserService } from "./user.service";
 
