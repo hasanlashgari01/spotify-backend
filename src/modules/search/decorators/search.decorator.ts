@@ -17,5 +17,13 @@ export function SortSongs() {
 }
 
 export function SearchQuery() {
-    return applyDecorators(SortSongs(), Pagination());
+    return applyDecorators(
+        SortSongs(),
+        ApiQuery({
+            name: "page",
+            example: 1,
+            required: false,
+            type: "integer",
+        }),
+    );
 }
