@@ -13,6 +13,7 @@ import { UserEntity } from "../users/entities/user.entity";
 import { UserModule } from "../users/user.module";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
+import { SearchModule } from "../search/search.module";
 
 @Module({
     imports: [
@@ -29,6 +30,7 @@ import { AppService } from "./app.service";
         UserModule,
         UserEntity,
         LikeModule,
+        SearchModule,
     ],
     controllers: [AppController],
     providers: [AppService],
