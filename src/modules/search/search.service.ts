@@ -35,6 +35,20 @@ export class SearchService {
         } else if (filter === "user") {
             return await this.searchUser(page, limit, skip, q);
         }
+
+        const [artistsResult, songsResult, playlistsResult, usersResult] = await Promise.all([
+            this.searchArtist(page, limit, skip, q),
+            this.searchSong(page, limit, skip, q),
+            this.searchPlaylist(page, limit, skip, q),
+            this.searchUser(page, limit, skip, q),
+        ]);
+
+        return {
+            songs: songsResult.songs,
+            playlists: playlistsResult.playlists,
+            users: usersResult.users,
+            artists: artistsResult.artists,
+        };
     }
 
     private async searchPlaylist(page: number, limit: number, skip: number, q: string) {
