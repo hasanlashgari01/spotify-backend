@@ -10,7 +10,7 @@ export class SearchController {
 
     @Get("/")
     @ApiOperation({
-        summary: "Search by (all | songs | users | artists | playlists)",
+        summary: "Search by (all | songs | users | artist | playlists)",
     })
     @SearchQuery()
     search(@Query() searchDto: SearchDto) {

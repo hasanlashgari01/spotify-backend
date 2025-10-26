@@ -33,7 +33,7 @@ export class SongsController {
     @UseInterceptors(UploadFileS3("audio"))
     @ArtistOnly()
     @ApiConsumes(FormType.Multipart)
-    @ApiOperation({ summary: "Upload a new song (artists only)" })
+    @ApiOperation({ summary: "Upload a new song (artist only)" })
     create(
         @Body() createSongDto: CreateSongDto,
         @UploadedFile(AudioValidation) audio: Express.Multer.File,
@@ -77,7 +77,7 @@ export class SongsController {
 
     @Get("/status/:id")
     @ArtistOnly()
-    @ApiOperation({ summary: "Toggle active/inactive status of a song (artists only)" })
+    @ApiOperation({ summary: "Toggle active/inactive status of a song (artist only)" })
     toggleStatus(@Param("id") id: string) {
         return this.songsService.toggleStatus(+id);
     }
@@ -104,7 +104,7 @@ export class SongsController {
     @Patch(":id")
     @ArtistOnly()
     @ApiConsumes(FormType.Multipart)
-    @ApiOperation({ summary: "Update a song (artists only)" })
+    @ApiOperation({ summary: "Update a song (artist only)" })
     @UseInterceptors(UploadFileS3("audio"))
     update(
         @Param("id") id: string,
@@ -116,7 +116,7 @@ export class SongsController {
 
     @Delete(":id")
     @ArtistOnly()
-    @ApiOperation({ summary: "Delete a song by ID (artists only)" })
+    @ApiOperation({ summary: "Delete a song by ID (artist only)" })
     remove(@Param("id") id: string) {
         return this.songsService.remove(+id);
     }

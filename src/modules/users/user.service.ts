@@ -25,7 +25,7 @@ export class UserService {
     async getProfile(username: string) {
         const payload = this.request.user as AuthJwtPayload;
         const user = await this.userRepository.findOne({
-            where: { username },
+            where: { username,role:Role.USER },
             select: {
                 id: true,
                 username: true,
@@ -109,54 +109,6 @@ export class UserService {
 
     async findOneById(id: number, role?: Role) {
         const where: FindOptionsWhere<UserEntity> = { id };
-        if (role) where.role = role;
-
-        const user = await this.userRepository.findOne({
-            where,
-            select: {
-                id: true,
-                email: true,
-                username: true,
-                fullName: true,
-                avatar: true,
-                bio: true,
-                gender: true,
-                status: true,
-                createdAt: true,
-                updatedAt: true,
-            },
-        });
-        if (!user) throw new NotFoundException(NotFoundMessage.User);
-
-        return user;
-    }
-
-    async findOneByEmail(email: string, role?: Role): Promise<UserEntity> {
-        const where: FindOptionsWhere<UserEntity> = { email };
-        if (role) where.role = role;
-
-        const user = await this.userRepository.findOne({
-            where,
-            select: {
-                id: true,
-                email: true,
-                username: true,
-                fullName: true,
-                avatar: true,
-                bio: true,
-                gender: true,
-                status: true,
-                createdAt: true,
-                updatedAt: true,
-            },
-        });
-        if (!user) throw new NotFoundException(NotFoundMessage.User);
-
-        return user;
-    }
-
-    async findOneByUsername(username: string, role?: Role): Promise<UserEntity> {
-        const where: FindOptionsWhere<UserEntity> = { username };
         if (role) where.role = role;
 
         const user = await this.userRepository.findOne({

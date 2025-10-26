@@ -14,6 +14,7 @@ import { UserModule } from "../users/user.module";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { SearchModule } from "../search/search.module";
+import {ArtistModule} from "../artist/artist.module";
 
 @Module({
     imports: [
@@ -28,6 +29,7 @@ import { SearchModule } from "../search/search.module";
         PlaylistsModule,
         SongsModule,
         UserModule,
+        ArtistModule,
         UserEntity,
         LikeModule,
         SearchModule,
