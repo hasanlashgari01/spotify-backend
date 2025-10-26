@@ -10,7 +10,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Request } from "express";
 import { PaginationDto } from "src/common/dto/pagination.dto";
 import { BadRequestMessage, NotFoundMessage, PublicMessage } from "src/common/enum/message.enum";
-import { PlaylistStats } from "src/common/types/duration.interface";
+import { PlaylistStats } from "src/common/types/stats.interface";
 import { paginationGenerator, paginationSolver } from "src/common/utils/pagination.util";
 import { generateRandomSlug } from "src/common/utils/random.utils";
 import { FindOptionsWhere, Repository } from "typeorm";
