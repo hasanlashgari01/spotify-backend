@@ -98,6 +98,12 @@ export class PlaylistsController {
         return this.playlistsService.search(+playlistId, q);
     }
 
+    @Get(":slug/details")
+    @OptionalAuth()
+    findOneWithDetails(@Param("slug") slug: string) {
+        return this.playlistsService.findOneWithDetails(slug);
+    }
+
     @Get(":slug")
     @OptionalAuth()
     @ApiOperation({ summary: "Get playlist details by slug (optional auth)" })

@@ -10,6 +10,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Request } from "express";
 import { PaginationDto } from "src/common/dto/pagination.dto";
 import { BadRequestMessage, NotFoundMessage, PublicMessage } from "src/common/enum/message.enum";
+import { PlaylistStats } from "src/common/types/duration.interface";
 import { paginationGenerator, paginationSolver } from "src/common/utils/pagination.util";
 import { generateRandomSlug } from "src/common/utils/random.utils";
 import { FindOptionsWhere, Repository } from "typeorm";
@@ -82,6 +83,55 @@ export class PlaylistsService {
         };
     }
 
+    async findOneWithDetails(slug: string) {
+        const user = this.request?.user as AuthJwtPayload;
+        const where: FindOptionsWhere<PlaylistEntity> = {
+            slug,
+        };
+        if (user?.sub) {
+            const existPlaylist = await this.playlistRepository.findOne({ where: { slug } });
+            if (existPlaylist?.ownerId != user.sub) where.status = Status.PUBLIC;
+        } else {
+            where.status = Status.PUBLIC;
+        }
+
+        const playlist = await this.playlistRepository.findOne({
+            where,
+            relations: ["owner"],
+            select: {
+                owner: {
+                    id: true,
+                    username: true,
+                    fullName: true,
+                    avatar: true,
+                },
+            },
+        });
+        if (!playlist) throw new NotFoundException(NotFoundMessage.Playlist);
+        const result = await this.playlistSongRepository
+            .createQueryBuilder("playlistSong")
+            .leftJoin("playlistSong.song", "song")
+            .where("playlistSong.playlistId = :playlistId", { playlistId: playlist.id })
+            .select("SUM(song.duration)", "totalDuration")
+            .addSelect("COUNT(song.id)", "songCount")
+            .getRawOne<PlaylistStats>();
+
+        let isLiked = null;
+        if (user) {
+            isLiked = await this.playlistLikeRepository.findOneBy({
+                playlistId: playlist.id,
+                userId: user.sub,
+            });
+        }
+
+        return {
+            ...playlist,
+            totalDuration: Number(result?.totalDuration ?? 0),
+            count: Number(result?.songCount ?? 0),
+            isLiked: isLiked ? true : false,
+        };
+    }
+
     async findOne(
         slug: string,
         paginationDto: PaginationDto,
@@ -143,19 +193,8 @@ export class PlaylistsService {
 
         const [songsOfPlaylist, count] = await query.getManyAndCount();
 
-        let isLiked = null;
-        if (user) {
-            isLiked = await this.playlistLikeRepository.findOneBy({
-                playlistId: playlist.id,
-                userId: user.sub,
-            });
-        }
-
         return {
-            ...playlist,
-            isLiked: isLiked ? true : false,
             songs: songsOfPlaylist,
-            count,
             pagination: paginationGenerator(count, page, limit),
         };
     }
