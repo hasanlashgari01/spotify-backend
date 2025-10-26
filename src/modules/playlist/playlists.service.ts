@@ -113,7 +113,7 @@ export class PlaylistsService {
             .leftJoin("playlistSong.song", "song")
             .where("playlistSong.playlistId = :playlistId", { playlistId: playlist.id })
             .select("SUM(song.duration)", "totalDuration")
-            .addSelect("COUNT(song.id)", "songCount")
+            .addSelect("COUNT(song.id)", "totalCount")
             .getRawOne<PlaylistStats>();
 
         let isLiked = null;
@@ -127,7 +127,7 @@ export class PlaylistsService {
         return {
             ...playlist,
             totalDuration: Number(result?.totalDuration ?? 0),
-            count: Number(result?.songCount ?? 0),
+            totalCount: Number(result?.totalCount ?? 0),
             isLiked: isLiked ? true : false,
         };
     }

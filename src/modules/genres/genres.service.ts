@@ -25,7 +25,7 @@ export class GenresService {
                 "genre.title AS title",
                 "genre.slug AS slug",
                 "genre.cover AS cover",
-                "COUNT(song.id) AS songCount",
+                "COUNT(song.id) AS totalCount",
                 "SUM(song.duration) AS totalDuration",
             ])
             .groupBy("genre.id")
@@ -41,7 +41,7 @@ export class GenresService {
             title: result?.title,
             slug: result?.slug,
             cover: result?.cover,
-            songCount: Number(result?.songCount ?? 0),
+            totalCount: Number(result?.totalCount ?? 0),
             totalDuration: Number(result?.totalDuration ?? 0),
         };
     }

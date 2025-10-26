@@ -1,6 +1,6 @@
 export interface PlaylistStats {
   totalDuration: string;
-  songCount: string;
+  totalCount: string;
 }
 
 export interface GenreStats {
@@ -8,6 +8,6 @@ export interface GenreStats {
   title: string;
   slug: string;
   cover: string;
-  songCount: string;
+  totalCount: string;
   totalDuration: string;
 }
