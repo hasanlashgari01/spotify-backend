@@ -216,6 +216,18 @@ export class PlaylistsService {
         };
     }
 
+    async myLibrary() {
+        const { sub: userId } = this.request.user as AuthJwtPayload;
+
+        return this.playlistRepository
+            .createQueryBuilder("playlist")
+            .leftJoin("playlist.likes", "like", "like.userId = :userId", { userId })
+            .where("playlist.ownerId = :userId OR like.userId IS NOT NULL", { userId })
+            .orderBy("playlist.createdAt", "DESC")
+            .select(["playlist.id", "playlist.title", "playlist.slug", "playlist.cover"])
+            .getMany();
+    }
+
     async update(id: number, updatePlaylistDto: UpdatePlaylistDto, cover?: Express.Multer.File) {
         const { sub } = this.request.user as AuthJwtPayload;
         const { title, description } = updatePlaylistDto;

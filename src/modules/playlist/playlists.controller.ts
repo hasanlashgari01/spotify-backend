@@ -82,6 +82,13 @@ export class PlaylistsController {
         return this.playlistsService.myPlaylist(paginationDto);
     }
 
+    @Get("/my-library")
+    @Auth()
+    @ApiOperation({ summary: "Get my playlists and liked playlists" })
+    myLibrary() {
+        return this.playlistsService.myLibrary();
+    }
+
     @Get("/like")
     @Auth()
     @ApiOperation({ summary: "Get liked playlists" })
