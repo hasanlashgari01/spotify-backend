@@ -39,6 +39,15 @@ export class ArtistService {
 
         return this.songRepository.find({
             where: { artistId: id },
+            relations: ["artist"],
+            select: {
+                artist: {
+                    id: true,
+                    username: true,
+                    fullName: true,
+                    avatar: true,
+                },
+            },
             order: { plays: "DESC" },
             take: 10,
         });
