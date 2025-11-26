@@ -240,9 +240,8 @@ export class SongsService {
         const song = await this.findOneById(id);
         if (sub !== song.artistId) throw new BadRequestException(NotFoundMessage.Song);
 
-        await this.songRepository.update(id, {
-            status: song.status === SongStatus.DRAFT ? SongStatus.PUBLISHED : SongStatus.PUBLISHED,
-        });
+        const status = song.status === SongStatus.DRAFT ? SongStatus.PUBLISHED : SongStatus.DRAFT;
+        await this.songRepository.update(id, { status });
 
         return {
             message: "آهنگ مورد نظر با موفقیت آپدیت شد",
