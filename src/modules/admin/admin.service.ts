@@ -48,6 +48,8 @@ export class AdminService {
                 fullName: true,
                 username: true,
                 status: true,
+                isBan: true,
+                role: true,
             },
             skip,
             take,
