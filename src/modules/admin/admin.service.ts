@@ -150,6 +150,21 @@ export class AdminService {
 
         const [playlists, count] = await this.playlistRepository.findAndCount({
             where,
+            relations: ["owner"],
+            select: {
+                id: true,
+                title: true,
+                slug: true,
+                cover: true,
+                status: true,
+                ownerId: true,
+                owner: {
+                    id: true,
+                    username: true,
+                    fullName: true,
+                    avatar: true,
+                },
+            },
             skip,
             take: limit,
             order: { createdAt: "DESC" },
@@ -167,7 +182,7 @@ export class AdminService {
 
         return this.songRepository.find({
             where,
-            relations: ["album", "artist", "genres"],
+            relations: ["artist", "genres"],
             select: {
                 artist: {
                     username: true,
