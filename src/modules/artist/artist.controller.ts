@@ -16,7 +16,7 @@ export class ArtistController {
     getProfile(@Param("username") username: string) {
         return this.artistService.getProfile(username);
     }
-    
+
     @Get("/popular/:id")
     myPopularSongs(@Param("id") id: string) {
         return this.artistService.myPopularSongs(+id);

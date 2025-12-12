@@ -25,7 +25,7 @@ export class UserService {
     async getProfile(username: string) {
         const payload = this.request.user as AuthJwtPayload;
         const user = await this.userRepository.findOne({
-            where: { username,role:Role.USER },
+            where: { username, role: Role.USER },
             select: {
                 id: true,
                 username: true,
