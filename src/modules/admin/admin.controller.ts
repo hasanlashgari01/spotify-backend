@@ -37,6 +37,11 @@ export class AdminController {
         return this.adminService.getCount();
     }
 
+    @Get("/week/users")
+    getLast7DaysRegistered() {
+        return this.adminService.getLast7DaysRegistered();
+    }
+
     @Get("/user")
     @ApiOperation({ summary: "Get all users filtered by status, role, gender" })
     @Pagination()

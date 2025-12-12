@@ -76,6 +76,39 @@ export class AdminService {
         };
     }
 
+    async getLast7DaysRegistered() {
+        const today = new Date();
+        today.setHours(23, 59, 59, 999);
+
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(today.getDate() - 5);
+        sevenDaysAgo.setHours(0, 0, 0, 0);
+
+        const registrations: { date: string; count: string }[] = await this.userRepository
+            .createQueryBuilder(EntityName.User)
+            .select("DATE(user.createdAt)", "date")
+            .addSelect("COUNT(*)", "count")
+            .where("user.createdAt BETWEEN :start AND :end", { start: sevenDaysAgo, end: today })
+            .groupBy("DATE(user.createdAt)")
+            .orderBy("DATE(user.createdAt)", "ASC")
+            .getRawMany();
+
+        const result: { date: string; count: number }[] = [];
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(sevenDaysAgo);
+            date.setDate(sevenDaysAgo.getDate() + i);
+            const dateStr = date.toISOString().split("T")[0]; // yyyy-mm-dd
+
+            const dayData = registrations.find((r) => r.date === dateStr);
+            result.push({
+                date: dateStr,
+                count: dayData ? Number(dayData.count) : 0,
+            });
+        }
+
+        return result;
+    }
+
     async findAllUsers(queryDto: FindAllUsersDto) {
         const { page, limit, role, status, gender } = queryDto;
         const { limit: take, page: paginationPage, skip } = paginationSolver({ page, limit });
