@@ -32,22 +32,22 @@ import { SongFilterStatus } from "../song/decorators/query.decorator";
 export class AdminController {
     constructor(private readonly adminService: AdminService) {}
 
-    @Get()
+    @Get("/count")
     getCount() {
         return this.adminService.getCount();
     }
 
-    @Get("/week/users")
+    @Get("/count/week")
     getLast7DaysRegistered() {
         return this.adminService.getLast7DaysRegistered();
     }
 
-    @Get("/banned")
+    @Get("/count/banned")
     getBannedAndActiveCounts() {
         return this.adminService.getBannedAndActiveCounts();
     }
 
-    @Get("/genders")
+    @Get("/count/genders")
     getUserCountsByGender() {
         return this.adminService.getUserCountsByGender();
     }
