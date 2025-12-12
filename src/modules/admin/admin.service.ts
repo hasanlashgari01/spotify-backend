@@ -109,6 +109,21 @@ export class AdminService {
         return result;
     }
 
+    async getBannedAndActiveCounts() {
+        const result = await this.userRepository
+            .createQueryBuilder(EntityName.User)
+            .select("SUM(CASE WHEN user.isBan = true THEN 1 ELSE 0 END)", "banned")
+            .addSelect("SUM(CASE WHEN user.isBan = false THEN 1 ELSE 0 END)", "active")
+            .getRawOne<{ banned: string; active: string }>();
+        const banned = result?.banned ? Number(result.banned) : 0;
+        const active = result?.active ? Number(result.active) : 0;
+
+        return {
+            banned,
+            active,
+        };
+    }
+
     async findAllUsers(queryDto: FindAllUsersDto) {
         const { page, limit, role, status, gender } = queryDto;
         const { limit: take, page: paginationPage, skip } = paginationSolver({ page, limit });
