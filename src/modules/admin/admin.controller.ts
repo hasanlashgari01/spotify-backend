@@ -32,6 +32,11 @@ import { SongFilterStatus } from "../song/decorators/query.decorator";
 export class AdminController {
     constructor(private readonly adminService: AdminService) {}
 
+    @Get()
+    getCount() {
+        return this.adminService.getCount();
+    }
+
     @Get("/user")
     @ApiOperation({ summary: "Get all users filtered by status, role, gender" })
     @Pagination()

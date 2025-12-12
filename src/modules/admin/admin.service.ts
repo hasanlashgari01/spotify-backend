@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { AdminMessage } from "src/common/enum/message.enum";
 import { paginationGenerator, paginationSolver } from "src/common/utils/pagination.util";
-import { DeepPartial, FindOptionsWhere, Repository } from "typeorm";
+import { Between, DeepPartial, FindOptionsWhere, Repository } from "typeorm";
 import { GenreEntity } from "../genres/entities/genre.entity";
 import { UserEntity } from "../users/entities/user.entity";
 import { FindAllUsersDto } from "./dto/user.dto";
@@ -15,6 +15,8 @@ import { PaginationDto } from "src/common/dto/pagination.dto";
 import { CreateGenreDto } from "../genres/dto/create-genre.dto";
 import { SongStatus } from "src/common/enum/song.enum";
 import { SongEntity } from "../song/entities/song.entity";
+import { Role } from "../users/enum/user.enum";
+import { EntityName } from "src/common/enum/entity.enum";
 
 @Injectable()
 export class AdminService {
@@ -30,6 +32,49 @@ export class AdminService {
         private genreService: GenresService,
         private s3Service: S3Service,
     ) {}
+
+    async getCount() {
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const [roleCounts, todayRegistered, songs, playlists] = await Promise.all([
+            this.userRepository
+                .createQueryBuilder(EntityName.User)
+                .select("user.role", "role")
+                .addSelect("COUNT(*)", "count")
+                .groupBy("user.role")
+                .getRawMany(),
+            this.userRepository.count({
+                where: {
+                    createdAt: Between(startOfDay, endOfDay),
+                },
+            }),
+            this.songRepository.count(),
+            this.playlistRepository.count(),
+        ]);
+
+        const counts: Record<string, number> = {
+            admins: 0,
+            users: 0,
+            artists: 0,
+        };
+        roleCounts.forEach((row: { role: Role; count: string }) => {
+            if (row.role === Role.ADMIN) counts.admins = Number(row.count);
+            if (row.role === Role.USER) counts.users = Number(row.count);
+            if (row.role === Role.ARTIST) counts.artists = Number(row.count);
+        });
+
+        return {
+            admins: counts.admins,
+            users: counts.users,
+            artists: counts.artists,
+            todayRegistered,
+            songs,
+            playlists,
+        };
+    }
 
     async findAllUsers(queryDto: FindAllUsersDto) {
         const { page, limit, role, status, gender } = queryDto;
