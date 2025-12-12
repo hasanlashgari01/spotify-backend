@@ -15,7 +15,7 @@ import { PaginationDto } from "src/common/dto/pagination.dto";
 import { CreateGenreDto } from "../genres/dto/create-genre.dto";
 import { SongStatus } from "src/common/enum/song.enum";
 import { SongEntity } from "../song/entities/song.entity";
-import { Role } from "../users/enum/user.enum";
+import { Gender, Role } from "../users/enum/user.enum";
 import { EntityName } from "src/common/enum/entity.enum";
 
 @Injectable()
@@ -122,6 +122,32 @@ export class AdminService {
             banned,
             active,
         };
+    }
+
+    async getUserCountsByGender() {
+        const result = await this.userRepository
+            .createQueryBuilder("user")
+            .select("user.gender", "gender")
+            .addSelect("COUNT(*)", "count")
+            .groupBy("user.gender")
+            .getRawMany<{ gender: Gender | null; count: string }>();
+
+        const response: Record<Gender | "unknown", number> = {
+            male: 0,
+            female: 0,
+            other: 0,
+            unknown: 0, // برای کاربرانی که gender = null دارند
+        };
+
+        result.forEach((row) => {
+            if (!row.gender) {
+                response.unknown += Number(row.count);
+            } else {
+                response[row.gender] = Number(row.count);
+            }
+        });
+
+        return response;
     }
 
     async findAllUsers(queryDto: FindAllUsersDto) {

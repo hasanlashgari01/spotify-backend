@@ -47,6 +47,11 @@ export class AdminController {
         return this.adminService.getBannedAndActiveCounts();
     }
 
+    @Get("/genders")
+    getUserCountsByGender() {
+        return this.adminService.getUserCountsByGender();
+    }
+
     @Get("/user")
     @ApiOperation({ summary: "Get all users filtered by status, role, gender" })
     @Pagination()
