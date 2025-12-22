@@ -2,14 +2,14 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from "@nes
 import { REQUEST } from "@nestjs/core";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Request } from "express";
+import { PaginationDto } from "src/common/dto/pagination.dto";
 import { AuthMessage, PublicMessage } from "src/common/enum/message.enum";
+import { paginationGenerator, paginationSolver } from "src/common/utils/pagination.util";
 import { Repository } from "typeorm";
 import { AuthJwtPayload } from "../auth/types/auth-payload";
 import { UserEntity } from "../users/entities/user.entity";
 import { FollowEntity } from "./entities/follow.entity";
-import { PaginationDto } from "src/common/dto/pagination.dto";
-import { paginationGenerator, paginationSolver } from "src/common/utils/pagination.util";
-import { FollowingRaw } from "./types/raw.type";
+import { FollowerRaw, FollowingRaw } from "./types/raw.type";
 
 @Injectable()
 export class FollowService {
@@ -58,30 +58,51 @@ export class FollowService {
     }
 
     async getFollowers(userId: number, paginationDto: PaginationDto) {
+        const { sub } = this.request.user as AuthJwtPayload;
         const { limit, page, skip } = paginationSolver(paginationDto);
 
-        const [followers, count] = await this.followRepository.findAndCount({
+        const count = await this.followRepository.count({
             where: { followingId: userId },
-            relations: {
-                follower: true,
-            },
-            select: {
-                follower: {
-                    id: true,
-                    fullName: true,
-                    username: true,
-                    avatar: true,
-                    role: true,
-                },
-            },
-            skip,
-            take: limit,
-            order: { createdAt: "DESC" },
         });
+
+        const followers: FollowerRaw[] = await this.followRepository
+            .createQueryBuilder("follow")
+            .leftJoin("follow.follower", "follower")
+            .leftJoin(
+                "follow",
+                "currentUserFollow",
+                "currentUserFollow.followingId = follower.id AND currentUserFollow.followerId = :currentUserId",
+                { currentUserId: sub },
+            )
+            .where("follow.followingId = :userId", { userId })
+            .select([
+                "follower.id",
+                "follower.fullName",
+                "follower.username",
+                "follower.avatar",
+                "follower.role",
+                "MAX(CASE WHEN currentUserFollow.id IS NOT NULL THEN 1 ELSE 0 END) as isFollowing",
+            ])
+            .groupBy(
+                "follower.id, follower.fullName, follower.username, follower.avatar, follower.role",
+            )
+            .skip(skip)
+            .take(limit)
+            .orderBy("follow.createdAt", "DESC")
+            .getRawMany();
+
+        const result = followers.map((f) => ({
+            id: Number(f.follower_id),
+            fullName: f.follower_fullName,
+            username: f.follower_username,
+            avatar: f.follower_avatar,
+            role: f.follower_role,
+            isFollowing: Number(f.isFollowing) === 1,
+        }));
 
         return {
             pagination: paginationGenerator(count, page, limit),
-            followers,
+            followers: result,
         };
     }
 
