@@ -9,6 +9,7 @@ import { UserEntity } from "../users/entities/user.entity";
 import { FollowEntity } from "./entities/follow.entity";
 import { PaginationDto } from "src/common/dto/pagination.dto";
 import { paginationGenerator, paginationSolver } from "src/common/utils/pagination.util";
+import { FollowingRaw } from "./types/raw.type";
 
 @Injectable()
 export class FollowService {
@@ -85,30 +86,53 @@ export class FollowService {
     }
 
     async getFollowings(userId: number, paginationDto: PaginationDto) {
+        const { sub } = this.request.user as AuthJwtPayload;
         const { limit, page, skip } = paginationSolver(paginationDto);
 
-        const [followings, count] = await this.followRepository.findAndCount({
+        const count = await this.followRepository.count({
             where: { followerId: userId },
-            relations: {
-                following: true,
-            },
-            select: {
-                following: {
-                    id: true,
-                    fullName: true,
-                    username: true,
-                    avatar: true,
-                    role: true,
-                },
-            },
-            skip,
-            take: limit,
-            order: { createdAt: "DESC" },
         });
+
+        const followings: FollowingRaw[] = await this.followRepository
+            .createQueryBuilder("follow")
+            .leftJoin("follow.following", "following")
+            .leftJoin(
+                "follow",
+                "currentUserFollow",
+                "currentUserFollow.followingId = follow.followingId AND currentUserFollow.followerId = :currentUserId",
+                { currentUserId: sub },
+            )
+            .where("follow.followerId = :userId", { userId })
+            .select([
+                "following.id",
+                "following.fullName",
+                "following.username",
+                "following.avatar",
+                "following.role",
+                "MAX(CASE WHEN currentUserFollow.id IS NOT NULL THEN 1 ELSE 0 END) as isFollowed",
+            ])
+            .groupBy("following.id")
+            .addGroupBy("following.fullName")
+            .addGroupBy("following.username")
+            .addGroupBy("following.avatar")
+            .addGroupBy("following.role")
+            .skip(skip)
+            .take(limit)
+            .orderBy("follow.createdAt", "DESC")
+            .getRawMany();
+
+        const result = followings.map((f) => ({
+            id: Number(f.following_id),
+            fullName: f.following_fullName,
+            username: f.following_username,
+            avatar: f.following_avatar,
+            role: f.following_role,
+            isFollowed: Number(f.isFollowed) === 1,
+        }));
 
         return {
             pagination: paginationGenerator(count, page, limit),
-            followings,
+            followings: result,
         };
     }
 }
