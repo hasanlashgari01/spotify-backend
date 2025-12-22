@@ -37,20 +37,32 @@ export class UserService {
             },
         });
         if (!user) throw new BadRequestException(AuthMessage.NotFoundAccount);
-        if (user?.status === Status.PRIVATE) {
-            if (payload && payload.sub) {
-                const isFollowing = await this.followRepository.findOneBy({
-                    followerId: payload.sub,
-                    followingId: user.id,
-                });
-                if (!isFollowing) throw new BadRequestException("این حساب کاربری خصوصی است");
+        if (user.status === Status.PUBLIC) {
+            return {
+                ...user,
+                message: null,
+            };
+        }
 
-                return user;
-            } else {
-                throw new BadRequestException("این حساب کاربری خصوصی است");
-            }
+        const isFollowing = await this.followRepository.findOneBy({
+            followerId: payload.sub,
+            followingId: user.id,
+        });
+
+        if (isFollowing) {
+            return {
+                ...user,
+                message: null,
+            };
         } else {
-            return user;
+            return {
+                id: user.id,
+                username: user.username,
+                avatar: user.avatar,
+                fullName: user.fullName,
+                status: user.status,
+                message: "شما باید این کاربر را دنبال کنید تا پروفایل کامل را ببینید",
+            };
         }
     }
 
