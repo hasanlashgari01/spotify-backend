@@ -6,3 +6,12 @@ export interface FollowingRaw {
     following_role: string;
     isFollowed: string;
 }
+
+export interface FollowerRaw {
+    follower_id: string;
+    follower_fullName: string;
+    follower_username: string;
+    follower_avatar: string | null;
+    follower_role: string;
+    isFollowing: string;
+}
