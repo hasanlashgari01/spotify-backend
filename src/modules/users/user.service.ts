@@ -36,11 +36,12 @@ export class UserService {
                 createdAt: true,
             },
         });
-        if (!user) throw new BadRequestException(AuthMessage.NotFoundAccount);
+        if (!user) throw new NotFoundException(AuthMessage.NotFoundAccount);
         if (user.status === Status.PUBLIC) {
             return {
                 ...user,
                 message: null,
+                statusCode: 200,
             };
         }
 
@@ -53,6 +54,7 @@ export class UserService {
             return {
                 ...user,
                 message: null,
+                statusCode: 200,
             };
         } else {
             return {
@@ -62,6 +64,7 @@ export class UserService {
                 fullName: user.fullName,
                 status: user.status,
                 message: "شما باید این کاربر را دنبال کنید تا پروفایل کامل را ببینید",
+                statusCode: 400,
             };
         }
     }
