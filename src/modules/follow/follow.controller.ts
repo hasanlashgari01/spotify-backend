@@ -9,6 +9,13 @@ import { ApiOperation } from "@nestjs/swagger";
 export class FollowController {
     constructor(private readonly followService: FollowService) {}
 
+    @Get("/:userId")
+    @Auth()
+    @ApiOperation({ summary: "Check if the current user is following the user" })
+    checkFollow(@Param("userId", ParseIntPipe) userId: string) {
+        return this.followService.checkFollow(+userId);
+    }
+
     @Get("/:userId/followers/count")
     @OptionalAuth()
     @ApiOperation({ summary: "Get the number of followers for a user (optional auth)" })

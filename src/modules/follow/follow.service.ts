@@ -21,6 +21,16 @@ export class FollowService {
         @Inject(REQUEST) private request: Request,
     ) {}
 
+    async checkFollow(userId: number) {
+        const { sub } = this.request.user as AuthJwtPayload;
+        const follow = await this.followRepository.findOneBy({
+            followingId: userId,
+            followerId: sub,
+        });
+
+        return follow ? true : false;
+    }
+
     async toggleFollow(followingId: number) {
         const { sub } = this.request.user as AuthJwtPayload;
         if (sub === followingId) throw new BadRequestException(PublicMessage.CantFollow);
